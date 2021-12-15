@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        .panel {
+            padding: 36px 48px;
+            background-color: #fff;
+            box-shadow: 0 0 40px 20px rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+        }
+        .panel div{
+            padding: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>Boom Analytics Test</h1>
+        <div>
+            <h4>发送事件</h4>
+            <button id="btn">send track</button>
+        </div>
+        <div>
+            <h4>获取匿名id</h4>
+            <button id="btn2">get AnonymousId</button>
+        </div>
+    </div>
+</body>
+</html>

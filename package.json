@@ -1,14 +1,15 @@
 {
   "name": "@vision_intelligence/anayltics-js",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && npm run copy && npm run uglify",
+    "build:publish": "tsc && npm run copy && npm run uglify && npm run publish",
+    "build:test": "tsc && npm run copy && npm run uglify",
     "uglify": "uglifyjs -mc -o dist/index.js dist/index.js",
     "copy": "node copy.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint lib --fix --ext .ts"
+    "lint": "eslint lib --fix --ext .ts",
+    "publish": "cd dist && npm version patch && npm publish"
   },
   "keywords": [
     "analytics"
