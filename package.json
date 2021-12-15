@@ -1,0 +1,33 @@
+{
+  "name": "@vision_intelligence/anayltics-js",
+  "version": "1.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && npm run copy && npm run uglify",
+    "uglify": "uglifyjs -mc -o dist/index.js dist/index.js",
+    "copy": "node copy.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint lib --fix --ext .ts"
+  },
+  "keywords": [
+    "analytics"
+  ],
+  "author": "VisionWX",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jquery": "^3.5.10",
+    "@types/node": "^16.11.12",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "typescript": "^4.5.3",
+    "uglify-js": "^3.14.5"
+  },
+  "dependencies": {
+    "@segment/analytics-next": "^1.32.1"
+  }
+}
