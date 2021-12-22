@@ -1,14 +1,21 @@
 export declare type Options = {
     env: 'live' | 'test';
-    platform_type: 'web' | 'extension' | 'mac-desktop' | 'win-desktop' | 'app';
+    platform_type: 'web' | 'extension_chromium' | 'extension_safari' | 'mac-desktop' | 'win-desktop' | 'app';
     platform_version: string;
     channel_media?: string;
     channel?: string;
+    extra_data?: any;
 };
 export declare type UserInfo = {
     _id: string;
     name?: string;
     phone: string;
+};
+export declare type SensorsUserInfo = {
+    nickname?: string;
+    phone?: string;
+    user_location?: string;
+    signup_time?: string;
 };
 export interface TrackEvents {
     login: (payload: {

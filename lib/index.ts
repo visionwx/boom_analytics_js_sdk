@@ -1,9 +1,9 @@
 import { Analytics, AnalyticsBrowser } from '@segment/analytics-next';
-import { Options, UserInfo, TrackEvents } from './types';
+import { Options, UserInfo, TrackEvents, SensorsUserInfo } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sensors = require('./sensors').default;
 
-export { Options, UserInfo, TrackEvents };
+export { Options, UserInfo, TrackEvents, SensorsUserInfo };
 
 export default class AnalyticsBoom {
     // segment
@@ -13,6 +13,7 @@ export default class AnalyticsBoom {
         login: (arg0: string) => void;
         track: (arg0: string, arg1: any) => void;
         quick: (arg0: string) => string;
+        setProfile: (arg0: SensorsUserInfo) => void;
     };
     private options: Options;
     private userInfo!: UserInfo;
@@ -67,16 +68,18 @@ export default class AnalyticsBoom {
         sensors.registerPage({
             platform_type: this.options.platform_type,
             channel_media: this.options.channel_media,
-            platform_version: this.options.platform_type,
+            platform_version: this.options.platform_version,
             channel: this.options.channel,
         });
 
         this.sensors = sensors;
     }
 
-    // 用户关联
+    /**
+     * 用户关联
+     */
     identify() {
-        if (this.userInfo._id) {
+        if (!this.userInfo._id) {
             return;
         }
 
@@ -89,7 +92,10 @@ export default class AnalyticsBoom {
         }
     }
 
-    // 设置公共属性 - 用户信息
+    /**
+     * 设置公共属性 - 用户信息
+     * @param userInfo
+     */
     setUserInfo(userInfo: UserInfo) {
         this.userInfo = {
             name: '',
@@ -97,7 +103,9 @@ export default class AnalyticsBoom {
         };
     }
 
-    // 初始化自定义事件
+    /**
+     * 初始化自定义事件
+     */
     private initTrack() {
         this.track = {
             login: (payload) => this.trackInstance('login', payload),
@@ -129,7 +137,11 @@ export default class AnalyticsBoom {
         };
     }
 
-    // track 事件
+    /**
+     * 自定义事件上报
+     * @param eventName 追踪事件名
+     * @param payload 埋点追踪参数
+     */
     trackInstance(eventName: string, payload: any) {
         // 提取 description 字段
         const description = payload.description || '';
@@ -153,6 +165,7 @@ export default class AnalyticsBoom {
                         name: this.userInfo.name,
                         phone: this.userInfo.phone,
                     },
+                    extra_data: this.options.extra_data,
                 },
                 ...payload,
                 description: `用户 <${this.userInfo.name || ''}> ${description}`,
@@ -160,11 +173,33 @@ export default class AnalyticsBoom {
         }
     }
 
-    // 获取匿名id
+    /**
+     * 获取匿名 id
+     * @returns segment_id
+     * @returns sensors_id
+     */
     getAnonymousId() {
         return {
             segment_id: (localStorage.getItem('ajs_anonymous_id') || '').replace(/"/g, ''),
             sensors_id: this.sensors ? (this.sensors.quick('getAnonymousID') as string) : '',
         };
+    }
+
+    /**
+     * 设置公共属性 - extra_data
+     * @param payload 自定义参数
+     */
+    setExtraData(payload: any) {
+        this.options.extra_data = payload;
+    }
+
+    /**
+     * 神策 - 设置用户属性
+     * @param payload 用户属性（神策要求）
+     */
+    setProfile(payload: SensorsUserInfo) {
+        if (this.sensors) {
+            this.sensors.setProfile(payload);
+        }
     }
 }
