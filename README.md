@@ -39,6 +39,10 @@ analytics.getAnonymousId();
 
 ## Change Log
 
+#### 2021-12-23 Jeffrey
+
+-   【新增】track 事件修改为 promise
+
 #### 2021-12-22 Jeffrey
 
 -   【修复】神策设置用户属性事件 优化部分事件字段类型

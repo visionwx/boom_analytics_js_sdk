@@ -26,7 +26,7 @@ export default class AnalyticsBoom {
      * @param eventName 追踪事件名
      * @param payload 埋点追踪参数
      */
-    trackInstance(eventName: string, payload: any): void;
+    trackInstance(eventName: string, payload: any): Promise<false | import("@segment/analytics-next").Context>;
     /**
      * 获取匿名 id
      * @returns segment_id

@@ -1,4 +1,5 @@
 import { Analytics, AnalyticsBrowser } from '@segment/analytics-next';
+import { DispatchedEvent } from '@segment/analytics-next/dist/pkg/core/arguments-resolver';
 import { Options, UserInfo, TrackEvents, SensorsUserInfo } from './types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sensors = require('./sensors').default;
@@ -108,32 +109,35 @@ export default class AnalyticsBoom {
      */
     private initTrack() {
         this.track = {
-            login: (payload) => this.trackInstance('login', payload),
-            get_code: (payload) => this.trackInstance('get_code', payload),
-            set_nickname: (payload) => this.trackInstance('set_nickname', payload),
+            login: async (payload) => await this.trackInstance('login', payload),
+            get_code: async (payload) => await this.trackInstance('get_code', payload),
+            set_nickname: async (payload) => await this.trackInstance('set_nickname', payload),
 
-            error_info: (payload) => this.trackInstance('error_info', payload),
+            error_info: async (payload) => await this.trackInstance('error_info', payload),
 
-            video_comment_click: (payload) => this.trackInstance('video_comment_click', payload),
-            start_comment: (payload) => this.trackInstance('start_comment', payload),
-            media_access_result: (payload) => this.trackInstance('media_access_result', payload),
-            open_annotation: (payload) => this.trackInstance('open_annotation', payload),
-            comment_status: (payload) => this.trackInstance('comment_status', payload),
+            video_comment_click: async (payload) => await this.trackInstance('video_comment_click', payload),
+            start_comment: async (payload) => await this.trackInstance('start_comment', payload),
+            media_access_result: async (payload) => await this.trackInstance('media_access_result', payload),
+            open_annotation: async (payload) => await this.trackInstance('open_annotation', payload),
+            comment_status: async (payload) => await this.trackInstance('comment_status', payload),
 
-            setting_panel: (payload) => this.trackInstance('setting_panel', payload),
-            start_record: (payload) => this.trackInstance('start_record', payload),
-            assist_operate: (payload) => this.trackInstance('assist_operate', payload),
-            record_status: (payload) => this.trackInstance('record_status', payload),
+            setting_panel: async (payload) => await this.trackInstance('setting_panel', payload),
+            start_record: async (payload) => await this.trackInstance('start_record', payload),
+            assist_operate: async (payload) => await this.trackInstance('assist_operate', payload),
+            record_status: async (payload) => await this.trackInstance('record_status', payload),
 
-            check_update: (payload) => this.trackInstance('check_update', payload),
-            download_update: (payload) => this.trackInstance('download_update', payload),
-            install_update: (payload) => this.trackInstance('install_update', payload),
-            update_result: (payload) => this.trackInstance('update_result', payload),
-            exit_update: (payload) => this.trackInstance('exit_update', payload),
-            item_click: (payload) => this.trackInstance('item_click', payload),
+            check_update: async (payload) => await this.trackInstance('check_update', payload),
+            download_update: async (payload) => await this.trackInstance('download_update', payload),
+            install_update: async (payload) => await this.trackInstance('install_update', payload),
+            update_result: async (payload) => await this.trackInstance('update_result', payload),
+            exit_update: async (payload) => await this.trackInstance('exit_update', payload),
+            item_click: async (payload) => await this.trackInstance('item_click', payload),
 
-            prd_pageview: (payload) => this.trackInstance('prd_pageview', payload),
-            official_pageview: (payload) => this.trackInstance('official_pageview', payload),
+            prd_pageview: async (payload) => await this.trackInstance('prd_pageview', payload),
+            official_pageview: async (payload) => await this.trackInstance('official_pageview', payload),
+
+            installed: async (payload) => await this.trackInstance('installed', payload),
+            uninstalled: async (payload) => await this.trackInstance('uninstalled', payload),
         };
     }
 
@@ -142,7 +146,7 @@ export default class AnalyticsBoom {
      * @param eventName 追踪事件名
      * @param payload 埋点追踪参数
      */
-    trackInstance(eventName: string, payload: any) {
+    async trackInstance(eventName: string, payload: any) {
         // 提取 description 字段
         const description = payload.description || '';
 
@@ -153,8 +157,9 @@ export default class AnalyticsBoom {
             this.sensors.track(eventName, payload);
         }
 
+        // try {
         if (this.analytics) {
-            this.analytics.track(eventName, {
+            return (await this.analytics.track(eventName, {
                 general_attr: {
                     platform: {
                         name: this.options.platform_type,
@@ -169,7 +174,9 @@ export default class AnalyticsBoom {
                 },
                 ...payload,
                 description: `用户 <${this.userInfo.name || ''}> ${description}`,
-            });
+            })) as DispatchedEvent;
+        } else {
+            return false;
         }
     }
 
