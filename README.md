@@ -15,6 +15,15 @@ const analytics = new Analytics({
     ...
 })
 
+# 注册 beforeTrack 事件
+analytics.setBeforeTrack((description) => {
+    // do something
+})
+
+# 注册 afterTrack 事件
+analytics.setAfterTrack((description) => {
+    // do something
+})
 
 # 初始化后，在能获取到用户信息的地方调用该方法，确保后续的 track 事件能读取到用户信息
 analytics.setUserInfo({
@@ -38,6 +47,10 @@ analytics.getAnonymousId();
 ```
 
 ## Change Log
+
+#### 2021-12-27 Jeffrey
+
+-   【新增】beforeTrack、afterTrack 钩子函数
 
 #### 2021-12-23 Jeffrey
 

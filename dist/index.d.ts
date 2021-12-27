@@ -6,6 +6,8 @@ export default class AnalyticsBoom {
     private options;
     private userInfo;
     track: TrackEvents;
+    beforeTrack: (description: string) => void;
+    afterTrack: (description: string) => void;
     constructor(options: Options);
     private init;
     /**
@@ -46,4 +48,14 @@ export default class AnalyticsBoom {
      * @param payload 用户属性（神策要求）
      */
     setProfile(payload: SensorsUserInfo): void;
+    /**
+     * 注册 trackBefore 钩子函数
+     * @param callback
+     */
+    setBeforeTrack(callback: (description: string) => void): void;
+    /**
+     * 注册 afterTrack 钩子函数
+     * @param callback
+     */
+    setAfterTrack(callback: (description: string) => void): void;
 }

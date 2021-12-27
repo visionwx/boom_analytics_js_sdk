@@ -1,4 +1,4 @@
-import Analytics from '@vision_intelligence/analytics-js';
+import Analytics from '../../dist';
 
 console.log('start', Date.now());
 
@@ -6,6 +6,14 @@ const analytics = new Analytics({
     env: 'test',
     platform_version: '0.1.0',
     platform_type: 'web',
+});
+
+analytics.setBeforeTrack((description) => {
+    console.log('this is before track excu ', description);
+});
+
+analytics.setAfterTrack((description) => {
+    console.log('this is after track excu ', description);
 });
 
 analytics.setUserInfo({

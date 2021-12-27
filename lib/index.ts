@@ -21,6 +21,9 @@ export default class AnalyticsBoom {
 
     track!: TrackEvents;
 
+    beforeTrack!: (description: string) => void;
+    afterTrack!: (description: string) => void;
+
     constructor(options: Options) {
         this.options = {
             channel_media: '',
@@ -150,6 +153,11 @@ export default class AnalyticsBoom {
         // 提取 description 字段
         const description = payload.description || '';
 
+        // before track hook
+        if (this.beforeTrack && typeof this.beforeTrack === 'function') {
+            this.beforeTrack(payload.description);
+        }
+
         // 删除 神策不带
         delete payload.description;
 
@@ -159,7 +167,7 @@ export default class AnalyticsBoom {
 
         // try {
         if (this.analytics) {
-            return (await this.analytics.track(eventName, {
+            const res = (await this.analytics.track(eventName, {
                 general_attr: {
                     platform: {
                         name: this.options.platform_type,
@@ -175,6 +183,13 @@ export default class AnalyticsBoom {
                 ...payload,
                 description: `用户 <${this.userInfo.name || ''}> ${description}`,
             })) as DispatchedEvent;
+
+            // after track hook
+            if (this.afterTrack && typeof this.afterTrack === 'function') {
+                this.afterTrack(description);
+            }
+
+            return res;
         } else {
             return false;
         }
@@ -208,5 +223,21 @@ export default class AnalyticsBoom {
         if (this.sensors) {
             this.sensors.setProfile(payload);
         }
+    }
+
+    /**
+     * 注册 trackBefore 钩子函数
+     * @param callback
+     */
+    setBeforeTrack(callback: (description: string) => void) {
+        this.beforeTrack = callback;
+    }
+
+    /**
+     * 注册 afterTrack 钩子函数
+     * @param callback
+     */
+    setAfterTrack(callback: (description: string) => void) {
+        this.afterTrack = callback;
     }
 }
