@@ -45,6 +45,10 @@ export default class AnalyticsBoom {
     private async init() {
         const isLive = this.options.env === 'live';
 
+        (window as any).analytics = {
+            _cdn: 'https://oss.flix.visionwx.com/vendor_lib',
+        };
+
         const [response] = await AnalyticsBrowser.load({
             writeKey: isLive ? 'GCNYIjqIBhkI4eA10HxDEGazuCMW69hM' : 'ryeevPxktAiS6AL1tjATM0s7iGf7piwM',
         });

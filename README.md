@@ -48,6 +48,10 @@ analytics.getAnonymousId();
 
 ## Change Log
 
+#### 2021-12-29 Jeffrey
+
+-   【新增】设置 segment setting 接口地址为 oss url
+
 #### 2021-12-27 Jeffrey
 
 -   【新增】beforeTrack、afterTrack 钩子函数
