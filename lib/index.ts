@@ -1,10 +1,22 @@
 import { Analytics, AnalyticsBrowser } from '@segment/analytics-next';
 import { DispatchedEvent } from '@segment/analytics-next/dist/pkg/core/arguments-resolver';
-import { Options, UserInfo, TrackEvents, SensorsUserInfo } from './types';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const sensors = require('./sensors').default;
+import {
+    Options,
+    UserInfo,
+    TrackEvents,
+    SensorsUserInfo,
+    LogOptions,
+    LogPayload,
+    ResponseData,
+    ResponseDataData,
+    AnalyticsInfo,
+} from './types';
 
-export { Options, UserInfo, TrackEvents, SensorsUserInfo };
+import axios, { AxiosInstance } from 'axios';
+
+function timeout(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default class AnalyticsBoom {
     // segment
@@ -44,6 +56,8 @@ export default class AnalyticsBoom {
     // 初始化 sdk
     private async init() {
         const isLive = this.options.env === 'live';
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const sensors = require('./sensors').default;
 
         (window as any).analytics = {
             _cdn: 'https://oss.flix.visionwx.com/vendor_lib',
@@ -68,6 +82,7 @@ export default class AnalyticsBoom {
                 // 是否开启触达图，not_collect 表示关闭，不会自动采集 $WebStay 事件，可以设置 'default' 表示开启。
                 scroll_notice_map: 'not_collect',
             },
+            show_log: this.options.show_log || false,
         });
 
         sensors.quick('autoTrack'); // 用于采集 $pageview 事件。
@@ -143,8 +158,14 @@ export default class AnalyticsBoom {
             prd_pageview: async (payload) => await this.trackInstance('prd_pageview', payload),
             official_pageview: async (payload) => await this.trackInstance('official_pageview', payload),
 
-            installed: async (payload) => await this.trackInstance('installed', payload),
-            uninstalled: async (payload) => await this.trackInstance('uninstalled', payload),
+            extension_installed: async (payload) => await this.trackInstance('extension_installed', payload),
+            extension_uninstalled: async (payload) => await this.trackInstance('extension_uninstalled', payload),
+
+            share_screen: async (payload) => await this.trackInstance('share_screen', payload),
+            cancel_share_screen: async (payload) => await this.trackInstance('cancel_share_screen', payload),
+            extension_open: async (payload) => await this.trackInstance('extension_open', payload),
+
+            extension_crash: async (payload) => await this.trackInstance('extension_crash', payload),
         };
     }
 
@@ -165,12 +186,14 @@ export default class AnalyticsBoom {
         // 删除 神策不带
         delete payload.description;
 
-        if (this.sensors) {
-            this.sensors.track(eventName, payload);
+        // sdk 实例化未完成时 延迟处理
+        if (!this.sensors || !this.analytics) {
+            await timeout(80);
         }
 
-        // try {
-        if (this.analytics) {
+        try {
+            this.sensors.track(eventName, payload);
+
             const res = (await this.analytics.track(eventName, {
                 general_attr: {
                     platform: {
@@ -194,7 +217,7 @@ export default class AnalyticsBoom {
             }
 
             return res;
-        } else {
+        } catch (error) {
             return false;
         }
     }
@@ -203,10 +226,12 @@ export default class AnalyticsBoom {
      * 获取匿名 id
      * @returns segment_id
      * @returns sensors_id
+     * @returns segment_user_id
      */
     getAnonymousId() {
         return {
             segment_id: (localStorage.getItem('ajs_anonymous_id') || '').replace(/"/g, ''),
+            segment_user_id: (localStorage.getItem('ajs_user_id') || '').replace(/"/g, ''),
             sensors_id: this.sensors ? (this.sensors.quick('getAnonymousID') as string) : '',
         };
     }
@@ -245,3 +270,126 @@ export default class AnalyticsBoom {
         this.afterTrack = callback;
     }
 }
+
+class Log {
+    private options: LogOptions;
+    private userInfo: UserInfo = {
+        _id: 'unknown',
+        name: '',
+        phone: '',
+        country_code: '',
+    };
+    private analyticsInfo: AnalyticsInfo = { 'sensors-distinct-id': '', ajs_anonymous_id: '', ajs_user_id: '' };
+
+    axios!: AxiosInstance;
+
+    constructor(options: LogOptions) {
+        this.options = options;
+
+        this.initAxios();
+    }
+
+    /**
+     * 实例化 axios
+     */
+    initAxios() {
+        const service = axios.create({
+            baseURL: this.options.env === 'live' ? 'https://api.flix.visionwx.com' : 'https://api.tf.visionwx.com',
+            timeout: 120 * 1000,
+        });
+
+        service.interceptors.response.use(
+            (response) => {
+                return response.data;
+            },
+            (err) => {
+                return Promise.reject(err);
+            }
+        );
+
+        this.axios = service;
+    }
+
+    /**
+     * 设置公共属性 - 用户信息
+     * @param userInfo
+     */
+    setUserInfo(userInfo: UserInfo) {
+        this.userInfo = {
+            name: '',
+            ...userInfo,
+        };
+    }
+
+    /**
+     * 设置公共属性 - sdk 匿名信息
+     * @param analyticsInfo
+     */
+    setAnalyticsInfo(analyticsInfo: AnalyticsInfo) {
+        this.analyticsInfo = {
+            ...this.analyticsInfo,
+            ...analyticsInfo,
+        };
+    }
+
+    async debug(payload: LogPayload) {
+        const logTag = payload.logTag || 'info';
+
+        delete payload.logTag;
+
+        return await this.request('DEBUG', logTag, payload);
+    }
+
+    async info(payload: LogPayload) {
+        const logTag = payload.logTag || 'info';
+
+        delete payload.logTag;
+
+        return await this.request('INFO', logTag, payload);
+    }
+
+    async warn(payload: LogPayload) {
+        const logTag = payload.logTag || 'info';
+
+        delete payload.logTag;
+
+        return await this.request('WARN', logTag, payload);
+    }
+
+    async error(payload: LogPayload) {
+        const logTag = payload.logTag || 'info';
+
+        delete payload.logTag;
+
+        return await this.request('ERROR', logTag, payload);
+    }
+
+    async request(level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR', logTag: string, payload: LogPayload) {
+        const url = `/mgmt/logs/app?userId=${this.userInfo._id}&application=${this.options.platform_type}&version=${this.options.platform_version}&logTag=${logTag}`;
+
+        const data = {
+            content: payload.content || '',
+            level: level,
+            extraData: {
+                ...(payload.extraData || {}),
+                userInfo: {
+                    id: this.userInfo._id,
+                    name: this.userInfo.name,
+                    phone: this.userInfo.phone,
+                    country_code: this.userInfo.country_code,
+                },
+                boomInfo: {
+                    ...payload.extraData?.boomInfo,
+                },
+                analyticsInfo: this.analyticsInfo,
+                sentAt: new Date().toISOString(),
+            },
+            timestamp: Date.now(),
+            timezoneOffset: 0 - new Date().getTimezoneOffset() / 60,
+        };
+
+        return (await this.axios.post(url, data)) as unknown as Promise<ResponseData<ResponseDataData>>;
+    }
+}
+
+export { Options, UserInfo, TrackEvents, SensorsUserInfo, AnalyticsInfo, ResponseData, Log, LogPayload, LogOptions };

@@ -44,4 +44,17 @@ analytics.track.login({
 # 获取匿名 id
 analytics.getAnonymousId();
 
+// Log
+import { Log } from '@vision_intelligence/analytics-js'
+
+const log = new Log({
+    env: 'test',
+    ...
+})
+
+log.info({
+    content: 'send a message',
+    ...
+})
+
 ```

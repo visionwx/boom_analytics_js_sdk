@@ -1,5 +1,5 @@
-import { Options, UserInfo, TrackEvents, SensorsUserInfo } from './types';
-export { Options, UserInfo, TrackEvents, SensorsUserInfo };
+import { Options, UserInfo, TrackEvents, SensorsUserInfo, LogOptions, LogPayload, ResponseData, ResponseDataData, AnalyticsInfo } from './types';
+import { AxiosInstance } from 'axios';
 export default class AnalyticsBoom {
     private analytics;
     private sensors;
@@ -33,9 +33,11 @@ export default class AnalyticsBoom {
      * 获取匿名 id
      * @returns segment_id
      * @returns sensors_id
+     * @returns segment_user_id
      */
     getAnonymousId(): {
         segment_id: string;
+        segment_user_id: string;
         sensors_id: string;
     };
     /**
@@ -59,3 +61,30 @@ export default class AnalyticsBoom {
      */
     setAfterTrack(callback: (description: string) => void): void;
 }
+declare class Log {
+    private options;
+    private userInfo;
+    private analyticsInfo;
+    axios: AxiosInstance;
+    constructor(options: LogOptions);
+    /**
+     * 实例化 axios
+     */
+    initAxios(): void;
+    /**
+     * 设置公共属性 - 用户信息
+     * @param userInfo
+     */
+    setUserInfo(userInfo: UserInfo): void;
+    /**
+     * 设置公共属性 - sdk 匿名信息
+     * @param analyticsInfo
+     */
+    setAnalyticsInfo(analyticsInfo: AnalyticsInfo): void;
+    debug(payload: LogPayload): Promise<ResponseData<ResponseDataData>>;
+    info(payload: LogPayload): Promise<ResponseData<ResponseDataData>>;
+    warn(payload: LogPayload): Promise<ResponseData<ResponseDataData>>;
+    error(payload: LogPayload): Promise<ResponseData<ResponseDataData>>;
+    request(level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR', logTag: string, payload: LogPayload): Promise<ResponseData<ResponseDataData>>;
+}
+export { Options, UserInfo, TrackEvents, SensorsUserInfo, AnalyticsInfo, ResponseData, Log, LogPayload, LogOptions };

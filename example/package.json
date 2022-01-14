@@ -19,6 +19,6 @@
     "webpack-dev-server": "^4.6.0"
   },
   "dependencies": {
-    "@vision_intelligence/analytics-js": "^1.0.1"
+    "@vision_intelligence/analytics-js": "^1.0.12"
   }
 }

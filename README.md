@@ -44,9 +44,28 @@ analytics.track.login({
 # 获取匿名 id
 analytics.getAnonymousId();
 
+// Log
+import { Log } from '@vision_intelligence/analytics-js'
+
+const log = new Log({
+    env: 'test',
+    ...
+})
+
+log.info({
+    content: 'send a message',
+    ...
+})
+
 ```
 
 ## Change Log
+
+#### 2022-01-14 Jeffrey
+
+-   【新增】Log 模块
+-   【优化】Analytics 模块上报事件新增延时处理
+-   【新增】Analytics 模块新增多个插件事件
 
 #### 2021-12-29 Jeffrey
 

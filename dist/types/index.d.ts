@@ -6,11 +6,13 @@ export declare type Options = {
     channel_media?: string;
     channel?: string;
     extra_data?: any;
+    show_log?: boolean;
 };
 export declare type UserInfo = {
     _id: string;
     name?: string;
     phone: string;
+    country_code?: string;
 };
 export declare type SensorsUserInfo = {
     nickname?: string;
@@ -157,11 +159,54 @@ export interface TrackEvents {
         page_name: string;
         description: string;
     }) => Promise<DispatchedEvent | false>;
-    installed: (payload: {
+    extension_installed: (payload: {
         description: string;
     }) => Promise<DispatchedEvent | false>;
-    uninstalled: (payload: {
+    extension_uninstalled: (payload: {
         duration: number;
         description: string;
     }) => Promise<DispatchedEvent | false>;
+    share_screen: (payload: {
+        source_type: string;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    cancel_share_screen: (payload: {
+        source_type: string;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    extension_open: (payload: {
+        from: string;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    extension_crash: (payload: {
+        context: any;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+}
+export interface LogOptions {
+    env: 'test' | 'live' | 'pre';
+    platform_type: 'web' | 'extension_chromium' | 'extension_safari' | 'mac-desktop' | 'win-desktop' | 'app';
+    platform_version: string;
+}
+export interface LogPayload {
+    content: string;
+    extraData?: Record<string, any>;
+    logTag?: string;
+}
+export interface ResponseData<T> {
+    status: number;
+    message: string;
+    data: T;
+}
+export interface ResponseDataData {
+    need_upload: boolean;
+    path?: string;
+    bucket?: string;
+    region?: string;
+    domain?: string;
+}
+export interface AnalyticsInfo {
+    'sensors-distinct-id'?: string;
+    ajs_anonymous_id?: string;
+    ajs_user_id?: string;
 }
