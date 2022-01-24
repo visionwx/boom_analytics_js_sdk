@@ -166,6 +166,11 @@ export default class AnalyticsBoom {
             extension_open: async (payload) => await this.trackInstance('extension_open', payload),
 
             extension_crash: async (payload) => await this.trackInstance('extension_crash', payload),
+
+            clip_start: async (payload) => await this.trackInstance('clip_start', payload),
+            clip_operate: async (payload) => await this.trackInstance('clip_operate', payload),
+            clip_save: async (payload) => await this.trackInstance('clip_save', payload),
+            clip_cancel: async (payload) => await this.trackInstance('clip_cancel', payload),
         };
     }
 

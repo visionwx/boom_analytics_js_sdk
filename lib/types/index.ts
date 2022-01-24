@@ -171,6 +171,23 @@ export interface TrackEvents {
     extension_open: (payload: { from: string; description: string }) => Promise<DispatchedEvent | false>;
 
     extension_crash: (payload: { context: any; description: string }) => Promise<DispatchedEvent | false>;
+
+    clip_start: (payload: {
+        video_id: string;
+        video_time: number;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    clip_operate: (payload: {
+        video_id: string;
+        operate_type: 'reset' | 'undo' | 'redo' | 'split' | 'delete';
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    clip_save: (payload: {
+        video_id: string;
+        video_clips: string;
+        description: string;
+    }) => Promise<DispatchedEvent | false>;
+    clip_cancel: (payload: { video_id: string; description: string }) => Promise<DispatchedEvent | false>;
 }
 
 export interface LogOptions {
