@@ -14,10 +14,9 @@ import {
 
 import axios, { AxiosInstance } from 'axios';
 
-function timeout(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
+/**
+ * 行为事件上报模块
+ */
 export default class AnalyticsBoom {
     // segment
     private analytics!: Analytics;
@@ -35,6 +34,10 @@ export default class AnalyticsBoom {
 
     beforeTrack!: (description: string) => void;
     afterTrack!: (description: string) => void;
+
+    queues: { type: string; payload: any }[] = [];
+    timer: any = null;
+    counter = 0;
 
     constructor(options: Options) {
         this.options = {
@@ -180,6 +183,16 @@ export default class AnalyticsBoom {
      * @param payload 埋点追踪参数
      */
     async trackInstance(eventName: string, payload: any) {
+        // sdk 实例化未完成时 放入队列滞后发送
+        if (!this.sensors || !this.analytics) {
+            this.push({
+                type: eventName,
+                payload,
+            });
+
+            return false;
+        }
+
         // 提取 description 字段
         const description = payload.description || '';
 
@@ -190,11 +203,6 @@ export default class AnalyticsBoom {
 
         // 删除 神策不带
         delete payload.description;
-
-        // sdk 实例化未完成时 延迟处理
-        if (!this.sensors || !this.analytics) {
-            await timeout(80);
-        }
 
         try {
             this.sensors.track(eventName, payload);
@@ -274,8 +282,54 @@ export default class AnalyticsBoom {
     setAfterTrack(callback: (description: string) => void) {
         this.afterTrack = callback;
     }
+
+    /**
+     * 临时队列，存于内存中
+     * @param val
+     */
+    push(val: { type: string; payload: any }) {
+        this.queues.push(val);
+
+        if (!this.timer) {
+            this.queryQueueLoop();
+        }
+    }
+
+    /**
+     * 循环取出队列中的事件进行上报
+     * @returns
+     */
+    queryQueueLoop() {
+        if (!this.queues.length || this.counter >= 1200) {
+            clearTimeout(this.timer);
+            this.timer = null;
+            this.counter = 0;
+
+            return;
+        }
+
+        if (this.sensors && this.analytics) {
+            const current = this.queues.shift();
+
+            if (current?.type) {
+                this.trackInstance(current.type, current.payload);
+            }
+
+            this.queryQueueLoop();
+        } else {
+            // 为加载完毕，或者加载失败
+            this.timer = setTimeout(() => {
+                this.counter++;
+
+                this.queryQueueLoop();
+            }, 100);
+        }
+    }
 }
 
+/**
+ * 日志上报模块
+ */
 class Log {
     private options: LogOptions;
     private userInfo: UserInfo = {

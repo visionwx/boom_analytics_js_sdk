@@ -1,5 +1,8 @@
 import { Options, UserInfo, TrackEvents, SensorsUserInfo, LogOptions, LogPayload, ResponseData, ResponseDataData, AnalyticsInfo } from './types';
 import { AxiosInstance } from 'axios';
+/**
+ * 行为事件上报模块
+ */
 export default class AnalyticsBoom {
     private analytics;
     private sensors;
@@ -8,6 +11,12 @@ export default class AnalyticsBoom {
     track: TrackEvents;
     beforeTrack: (description: string) => void;
     afterTrack: (description: string) => void;
+    queues: {
+        type: string;
+        payload: any;
+    }[];
+    timer: any;
+    counter: number;
     constructor(options: Options);
     private init;
     /**
@@ -60,7 +69,23 @@ export default class AnalyticsBoom {
      * @param callback
      */
     setAfterTrack(callback: (description: string) => void): void;
+    /**
+     * 临时队列，存于内存中
+     * @param val
+     */
+    push(val: {
+        type: string;
+        payload: any;
+    }): void;
+    /**
+     * 循环取出队列中的事件进行上报
+     * @returns
+     */
+    queryQueueLoop(): void;
 }
+/**
+ * 日志上报模块
+ */
 declare class Log {
     private options;
     private userInfo;

@@ -1,6 +1,6 @@
 import Analytics, { Log } from '../../dist';
 
-console.log('start', Date.now());
+console.time();
 
 const analytics = new Analytics({
     env: 'test',
@@ -16,17 +16,17 @@ analytics.setAfterTrack((description) => {
     console.log('this is after track excu ', description);
 });
 
-analytics.track
-    .item_click({
-        page_from: '测试123',
-        click_button: 'send track',
-        source_id: '',
-        author_id: '',
-        description: '测试测试',
-    })
-    .then((res) => {
-        console.log('aaa res ', res);
-    });
+// analytics.track
+//     .item_click({
+//         page_from: '测试123',
+//         click_button: 'send track',
+//         source_id: '',
+//         author_id: '',
+//         description: '测试测试',
+//     })
+//     .then((res) => {
+//         console.log('aaa res ', res);
+//     });
 
 const log = new Log({
     env: 'test',
@@ -46,7 +46,7 @@ analytics.setUserInfo({
     phone: '13660493601',
 });
 
-console.log('secord', Date.now());
+console.timeEnd();
 
 const btn = document.getElementById('btn'),
     btn2 = document.getElementById('btn2'),
